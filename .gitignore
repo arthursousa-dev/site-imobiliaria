@@ -1,6 +1,7 @@
 # Sistema
 .DS_Store
 Thumbs.db
+.env
 
 # Editor/IDE
 .vscode/

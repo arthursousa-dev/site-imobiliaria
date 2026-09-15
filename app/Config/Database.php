@@ -13,12 +13,12 @@ class Database
     {
         if (self::$instancia === null) {
             $host = getenv('DB_HOST') ?: 'localhost';
-            $port = getenv('DB_PORT') ?: '3306';
+            $port = getenv('DB_PORT') ?: '5432';
             $nome = getenv('DB_NAME') ?: 'horizonte';
-            $user = getenv('DB_USER') ?: 'root';
+            $user = getenv('DB_USER') ?: 'postgres';
             $pass = getenv('DB_PASS') ?: '';
 
-            $dsn = "mysql:host={$host};port={$port};dbname={$nome};charset=utf8mb4";
+            $dsn = "pgsql:host={$host};port={$port};dbname={$nome}";
 
             try {
                 self::$instancia = new PDO($dsn, $user, $pass, [
