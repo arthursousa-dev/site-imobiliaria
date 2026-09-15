@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/../bootstrap_sessao.php';
 require __DIR__ . '/../../app/helpers.php';
 
 if (adminLogado()) {
