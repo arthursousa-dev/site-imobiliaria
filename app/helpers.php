@@ -33,14 +33,31 @@ function formatarDataBr(?string $data): string
 /** Autentica um admin contra admin_usuarios (senha em hash bcrypt). */
 function autenticarAdmin(string $email, string $senha): array|false
 {
-    $stmt = conectar()->prepare('SELECT * FROM admin_usuarios WHERE email = :email');
-    $stmt->execute([':email' => strtolower(trim($email))]);
+    $pdo = conectar();
+    $email = strtolower(trim($email));
+
+    $stmt = $pdo->prepare('SELECT * FROM admin_usuarios WHERE email = :email');
+    $stmt->execute([':email' => $email]);
     $admin = $stmt->fetch();
 
-    if ($admin && password_verify($senha, $admin['senha_hash'])) {
-        return $admin;
+    if (!$admin) {
+        return false;
     }
-    return false;
+    if ($admin['bloqueado_ate'] !== null && strtotime($admin['bloqueado_ate']) > time()) {
+        return false;
+    }
+    if (!password_verify($senha, $admin['senha_hash'])) {
+        $tentativas = (int) $admin['tentativas_login'] + 1;
+        $bloqueio = $tentativas >= 5 ? "now() + interval '15 minutes'" : 'NULL';
+        $pdo->prepare("UPDATE admin_usuarios SET tentativas_login = :t, bloqueado_ate = {$bloqueio} WHERE id = :id")
+            ->execute([':t' => $tentativas, ':id' => $admin['id']]);
+        return false;
+    }
+
+    $pdo->prepare('UPDATE admin_usuarios SET tentativas_login = 0, bloqueado_ate = NULL WHERE id = :id')
+        ->execute([':id' => $admin['id']]);
+
+    return $admin;
 }
 
 function adminLogado(): bool
