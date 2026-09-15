@@ -2,7 +2,7 @@
 
 Site institucional de imobiliária com catálogo dinâmico de imóveis, captação de leads (interesse + agendamento de visita) persistida em banco de dados, e painel administrativo completo (CRUD de imóveis, gestão de clientes).
 
-Convertido de um site estático (HTML/CSS puro, com imóveis fixos no markup e login decorativo) para uma aplicação PHP + MySQL com backend funcional de verdade.
+Convertido de um site estático (HTML/CSS puro, com imóveis fixos no markup e login decorativo) para uma aplicação PHP + PostgreSQL com backend funcional de verdade.
 
 ## Arquitetura
 
@@ -27,22 +27,22 @@ public/                     # document root
 
 ## Decisões técnicas
 
-- **PDO com prepared statements** em toda query.
-- **Senha do admin em bcrypt** (`password_hash`/`password_verify`).
+- **PDO com prepared statements** em toda query, contra **PostgreSQL**.
+- **Senha do admin em bcrypt** (`password_hash`/`password_verify`), com **bloqueio de conta** após 5 tentativas de login incorretas seguidas (15 minutos).
+- **Cookies de sessão** com `httponly`, `samesite=Lax` e `secure` (quando em HTTPS).
 - **CSRF** em todo formulário que altera dado (contato, login admin, CRUD de imóvel, exclusão, marcação de venda, mudança de status de cliente).
-- **Exclusão lógica** de imóvel (`ativo = 0`) em vez de `DELETE`, preservando o histórico de leads vinculados.
+- **Exclusão lógica** de imóvel (`ativo = false`) em vez de `DELETE`, preservando o histórico de leads vinculados.
 - **Dashboard com números reais**: os quatro indicadores (imóveis, clientes, visitas, vendas) que antes eram valores fixos no HTML agora vêm de consultas ao banco.
 - **Formulário de contato de verdade**: a seção "Fale com a gente", que antes só mostrava dados estáticos de contato, agora inclui um formulário que grava o lead no banco, associado opcionalmente a um imóvel específico ("Tenho interesse" em cada card).
 
 ## Como rodar localmente
 
 ```bash
-mysql -u root -p < database/schema.sql
+createdb horizonte
+psql horizonte < database/schema.sql
+psql horizonte < database/seed.sql
 
-export DB_HOST=localhost
-export DB_NAME=horizonte
-export DB_USER=root
-export DB_PASS=
+cp .env.example .env
 
 php -S localhost:8000 -t public
 ```
