@@ -4,10 +4,10 @@ require __DIR__ . '/../../app/helpers.php';
 exigirAdmin();
 
 $pdo = conectar();
-$imoveisCadastrados = (int) $pdo->query("SELECT COUNT(*) FROM imoveis WHERE ativo = 1 AND status = 'disponivel'")->fetchColumn();
+$imoveisCadastrados = (int) $pdo->query("SELECT COUNT(*) FROM imoveis WHERE ativo AND status = 'disponivel'")->fetchColumn();
 $clientesAtivos     = (int) $pdo->query("SELECT COUNT(*) FROM leads")->fetchColumn();
-$visitasAgendadas   = (int) $pdo->query("SELECT COUNT(*) FROM leads WHERE data_visita_preferida IS NOT NULL AND data_visita_preferida >= CURDATE()")->fetchColumn();
-$vendasMes          = (int) $pdo->query("SELECT COUNT(*) FROM imoveis WHERE status = 'vendido' AND MONTH(vendido_em) = MONTH(CURDATE()) AND YEAR(vendido_em) = YEAR(CURDATE())")->fetchColumn();
+$visitasAgendadas   = (int) $pdo->query("SELECT COUNT(*) FROM leads WHERE data_visita_preferida IS NOT NULL AND data_visita_preferida >= CURRENT_DATE")->fetchColumn();
+$vendasMes          = (int) $pdo->query("SELECT COUNT(*) FROM imoveis WHERE status = 'vendido' AND vendido_em >= date_trunc('month', CURRENT_DATE)")->fetchColumn();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

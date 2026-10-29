@@ -3,7 +3,7 @@ require_once __DIR__ . '/bootstrap_sessao.php';
 require __DIR__ . '/../app/helpers.php';
 
 $imoveis = conectar()->query(
-    "SELECT * FROM imoveis WHERE ativo = 1 AND status = 'disponivel' ORDER BY criado_em DESC"
+    "SELECT * FROM imoveis WHERE ativo AND status = 'disponivel' ORDER BY criado_em DESC"
 )->fetchAll();
 
 $erro = $_SESSION['lead_erro'] ?? null;

@@ -14,17 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'] ?? '';
 
     if ($acao === 'excluir') {
-        $stmt = $pdo->prepare('UPDATE imoveis SET ativo = 0 WHERE id = :id');
+        $stmt = $pdo->prepare('UPDATE imoveis SET ativo = false WHERE id = :id');
         $stmt->execute([':id' => $id]);
     } elseif ($acao === 'marcar_vendido') {
-        $stmt = $pdo->prepare("UPDATE imoveis SET status = 'vendido', vendido_em = CURDATE() WHERE id = :id");
+        $stmt = $pdo->prepare("UPDATE imoveis SET status = 'vendido', vendido_em = CURRENT_DATE WHERE id = :id");
         $stmt->execute([':id' => $id]);
     }
     header('Location: imoveis.php');
     exit;
 }
 
-$imoveis = $pdo->query('SELECT * FROM imoveis WHERE ativo = 1 ORDER BY criado_em DESC')->fetchAll();
+$imoveis = $pdo->query('SELECT * FROM imoveis WHERE ativo ORDER BY criado_em DESC')->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
