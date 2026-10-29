@@ -47,9 +47,9 @@ unset($_SESSION['lead_ok']);
 
       <?php foreach ($imoveis as $imovel): ?>
         <div class="card">
-          <img src="<?= limpar($imovel['imagem_url']) ?>" alt="<?= limpar($imovel['titulo']) ?>">
+          <a href="imovel.php?id=<?= (int) $imovel['id'] ?>"><img src="<?= limpar($imovel['imagem_url']) ?>" alt="<?= limpar($imovel['titulo']) ?>"></a>
           <div class="card-content">
-            <h3><?= limpar($imovel['titulo']) ?></h3>
+            <h3><a href="imovel.php?id=<?= (int) $imovel['id'] ?>" class="card-link"><?= limpar($imovel['titulo']) ?></a></h3>
             <p>
               <?= (int) $imovel['quartos'] ?> quartos ·
               <?= (int) $imovel['suites'] ?> suíte<?= $imovel['suites'] != 1 ? 's' : '' ?> ·
@@ -57,7 +57,8 @@ unset($_SESSION['lead_ok']);
               <?= (int) $imovel['area_m2'] ?>m²
             </p>
             <p class="preco"><?= formatarPreco($imovel['preco']) ?></p>
-            <a href="#contato" data-imovel-id="<?= (int) $imovel['id'] ?>" data-imovel-titulo="<?= limpar($imovel['titulo']) ?>" class="btn-destaque" style="display:inline-block;margin-top:10px;font-size:14px;padding:8px 18px">Tenho interesse</a>
+            <a href="#contato" data-imovel-id="<?= (int) $imovel['id'] ?>" data-imovel-titulo="<?= limpar($imovel['titulo']) ?>" class="btn-destaque btn-pequeno">Tenho interesse</a>
+            <a href="imovel.php?id=<?= (int) $imovel['id'] ?>" class="btn-contorno btn-pequeno">Ver detalhes</a>
           </div>
         </div>
       <?php endforeach; ?>
