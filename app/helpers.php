@@ -36,6 +36,13 @@ function lerPreco(string $valor): float
     return (float) str_replace(['.', ','], ['', '.'], $valor);
 }
 
+/** Quantidade de caracteres UTF-8 sem depender da extensão mbstring; UTF-8 inválido conta como excesso. */
+function tamanhoTexto(string $texto): int
+{
+    $total = preg_match_all('/./su', $texto);
+    return $total === false ? PHP_INT_MAX : $total;
+}
+
 function formatarDataBr(?string $data): string
 {
     if (!$data) return '—';

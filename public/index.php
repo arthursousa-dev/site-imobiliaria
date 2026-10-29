@@ -131,11 +131,11 @@ unset($_SESSION['lead_ok']);
         <?= csrfCampo() ?>
         <input type="hidden" name="imovel_id" id="lead_imovel">
 
-        <input type="text" name="nome" placeholder="Seu nome" required>
+        <input type="text" name="nome" placeholder="Seu nome" maxlength="150" required>
         <input type="email" name="email" placeholder="Seu e-mail" required>
-        <input type="text" name="telefone" placeholder="Seu telefone / WhatsApp" required>
-        <input type="date" name="data_visita_preferida" placeholder="Data preferida para visita">
-        <textarea name="mensagem" placeholder="Mensagem (opcional)"></textarea>
+        <input type="tel" name="telefone" placeholder="Seu telefone / WhatsApp" maxlength="30" required>
+        <input type="date" name="data_visita_preferida" min="<?= date('Y-m-d') ?>" aria-label="Data preferida para visita">
+        <textarea name="mensagem" placeholder="Mensagem (opcional)" maxlength="2000"></textarea>
 
         <button type="submit" class="btn-destaque">Enviar</button>
       </form>

@@ -18,12 +18,18 @@ $email    = trim($_POST['email'] ?? '');
 $telefone = trim($_POST['telefone'] ?? '');
 $imovelId = (int) ($_POST['imovel_id'] ?? 0);
 $mensagem = trim($_POST['mensagem'] ?? '');
-$dataVisita = $_POST['data_visita_preferida'] ?? '';
+$dataVisita = trim((string) ($_POST['data_visita_preferida'] ?? ''));
 
+// Limites iguais às colunas: texto maior que o VARCHAR estourava erro 500 no INSERT.
 $erros = [];
-if ($nome === '') $erros[] = 'nome';
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $erros[] = 'e-mail';
-if ($telefone === '') $erros[] = 'telefone';
+if ($nome === '' || tamanhoTexto($nome) > 150) $erros[] = 'nome';
+if (!filter_var($email, FILTER_VALIDATE_EMAIL) || tamanhoTexto($email) > 150) $erros[] = 'e-mail';
+if ($telefone === '' || tamanhoTexto($telefone) > 30) $erros[] = 'telefone';
+if (tamanhoTexto($mensagem) > 2000) $erros[] = 'mensagem';
+if ($dataVisita !== '') {
+    $data = DateTimeImmutable::createFromFormat('!Y-m-d', $dataVisita);
+    if (!$data || $data->format('Y-m-d') !== $dataVisita || $dataVisita < date('Y-m-d')) $erros[] = 'data da visita';
+}
 
 if (!empty($erros)) {
     $_SESSION['lead_erro'] = 'Verifique os dados informados (' . implode(', ', $erros) . ') e tente novamente.';
