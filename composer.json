@@ -1,0 +1,12 @@
+{
+    "name": "arthursousa-dev/site-imobiliaria",
+    "description": "Horizonte Imobiliária — catálogo, captação de leads e painel administrativo",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo_pgsql": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    }
+}
