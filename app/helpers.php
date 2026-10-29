@@ -56,14 +56,15 @@ function autenticarAdmin(string $email, string $senha): array|false
     $pdo = conectar();
     $email = strtolower(trim($email));
 
-    $stmt = $pdo->prepare('SELECT * FROM admin_usuarios WHERE email = :email');
+    $stmt = $pdo->prepare('SELECT *, CASE WHEN bloqueado_ate > now() THEN 1 ELSE 0 END AS bloqueado FROM admin_usuarios WHERE email = :email');
     $stmt->execute([':email' => $email]);
     $admin = $stmt->fetch();
 
     if (!$admin) {
         return false;
     }
-    if ($admin['bloqueado_ate'] !== null && strtotime($admin['bloqueado_ate']) > time()) {
+    // Comparado no banco: bloqueado_ate vem do now() do PostgreSQL, e strtotime() usaria o fuso do PHP.
+    if ((int) $admin['bloqueado'] === 1) {
         return false;
     }
     if (!password_verify($senha, $admin['senha_hash'])) {
