@@ -18,6 +18,7 @@ database/
 
 public/                     # document root
 ├── index.php                # catálogo + formulário de contato/interesse
+├── imovel.php               # página de detalhe do imóvel, com formulário de visita
 ├── enviar-lead.php           # processa o formulário (POST + CSRF + validação)
 ├── admin/
 │   ├── login.php, logout.php, dashboard.php
@@ -34,6 +35,9 @@ public/                     # document root
 - **CSRF** em todo formulário que altera dado (contato, login admin, CRUD de imóvel, exclusão, marcação de venda, mudança de status de cliente).
 - **Exclusão lógica** de imóvel (`ativo = false`) em vez de `DELETE`, preservando o histórico de leads vinculados.
 - **Dashboard com números reais**: os quatro indicadores (imóveis, clientes, visitas, vendas) que antes eram valores fixos no HTML agora vêm de consultas ao banco.
+- **Página de detalhe por imóvel** com características, descrição e formulário de visita que já chega associado ao imóvel.
+- **Aviso ao corretor por e-mail** a cada lead novo (`CORRETOR_EMAIL` no `.env`); falha de envio só vai para o log e nunca impede o lead de ser salvo.
+- **Responsivo**: catálogo, página de detalhe e painel administrativo se reorganizam em telas de celular.
 - **Formulário de contato de verdade**: a seção "Fale com a gente", que antes só mostrava dados estáticos de contato, agora inclui um formulário que grava o lead no banco, associado opcionalmente a um imóvel específico ("Tenho interesse" em cada card).
 
 ## Como rodar localmente
@@ -50,6 +54,16 @@ php -S localhost:8000 -t public
 
 Acesse `http://localhost:8000`.
 
+## Testes
+
+```bash
+composer install
+createdb horizonte_test && psql horizonte_test < database/schema.sql && psql horizonte_test < database/seed.sql
+DB_NAME=horizonte_test vendor/bin/phpunit
+```
+
+Cobrem a validação do formulário de contato (tamanhos, e-mail, datas inválidas ou no passado), o destino após o envio, a leitura de preços e o bloqueio de login após 5 senhas erradas. O GitHub Actions roda a suíte contra um PostgreSQL a cada push.
+
 ### Login administrativo de demonstração
 
 | E-mail | Senha |
@@ -58,9 +72,10 @@ Acesse `http://localhost:8000`.
 
 ## Roadmap
 
-- [ ] Página de detalhe individual para cada imóvel (galeria de fotos, mapa)
-- [ ] Notificação por e-mail ao corretor quando um lead novo chega
-- [ ] Responsividade completa para mobile
+- [x] Página de detalhe individual para cada imóvel
+- [ ] Galeria com várias fotos e mapa na página de detalhe
+- [x] Notificação por e-mail ao corretor quando um lead novo chega
+- [x] Responsividade completa para mobile
 
 ## Autor
 
