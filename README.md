@@ -13,7 +13,8 @@ app/
 └── helpers.php            # autenticação admin, CSRF, formatação
 
 database/
-└── schema.sql              # imoveis, leads, admin_usuarios + seed
+├── schema.sql              # imoveis, leads, admin_usuarios
+└── seed.sql                # imóveis e admin de demonstração
 
 public/                     # document root
 ├── index.php                # catálogo + formulário de contato/interesse
@@ -42,7 +43,7 @@ createdb horizonte
 psql horizonte < database/schema.sql
 psql horizonte < database/seed.sql
 
-cp .env.example .env
+cp .env.example .env        # preencha DB_PASS; variáveis de ambiente do servidor têm prioridade
 
 php -S localhost:8000 -t public
 ```
