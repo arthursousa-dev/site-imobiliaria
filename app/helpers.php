@@ -43,6 +43,78 @@ function tamanhoTexto(string $texto): int
     return $total === false ? PHP_INT_MAX : $total;
 }
 
+/**
+ * Valida os campos do formulário de contato. Devolve [dados limpos, lista de campos inválidos].
+ * Limites iguais às colunas: texto maior que o VARCHAR estourava erro 500 no INSERT.
+ */
+function validarLead(array $entrada, ?string $hoje = null): array
+{
+    $hoje ??= date('Y-m-d');
+    $dados = [
+        'nome'       => trim((string) ($entrada['nome'] ?? '')),
+        'email'      => trim((string) ($entrada['email'] ?? '')),
+        'telefone'   => trim((string) ($entrada['telefone'] ?? '')),
+        'imovel_id'  => (int) ($entrada['imovel_id'] ?? 0),
+        'mensagem'   => trim((string) ($entrada['mensagem'] ?? '')),
+        'data_visita'=> trim((string) ($entrada['data_visita_preferida'] ?? '')),
+    ];
+
+    $erros = [];
+    if ($dados['nome'] === '' || tamanhoTexto($dados['nome']) > 150) $erros[] = 'nome';
+    if (!filter_var($dados['email'], FILTER_VALIDATE_EMAIL) || tamanhoTexto($dados['email']) > 150) $erros[] = 'e-mail';
+    if ($dados['telefone'] === '' || tamanhoTexto($dados['telefone']) > 30) $erros[] = 'telefone';
+    if (tamanhoTexto($dados['mensagem']) > 2000) $erros[] = 'mensagem';
+    if ($dados['data_visita'] !== '') {
+        $data = DateTimeImmutable::createFromFormat('!Y-m-d', $dados['data_visita']);
+        if (!$data || $data->format('Y-m-d') !== $dados['data_visita'] || $dados['data_visita'] < $hoje) $erros[] = 'data da visita';
+    }
+
+    return [$dados, $erros];
+}
+
+/** Para onde voltar depois do envio: a página do imóvel, se o contato veio dela, ou a home. */
+function destinoLead(string $origem, int $imovelId): string
+{
+    return $origem === 'imovel' && $imovelId > 0 ? "imovel.php?id={$imovelId}#contato" : 'index.php#contato';
+}
+
+/**
+ * Avisa o corretor por e-mail que um lead chegou. Só envia se CORRETOR_EMAIL estiver
+ * definido; falha de envio é registrada no log e nunca impede o lead de ser salvo.
+ */
+function notificarCorretor(array $lead, ?string $imovelTitulo): bool
+{
+    $destino = getenv('CORRETOR_EMAIL') ?: '';
+    if (!filter_var($destino, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+
+    $linhas = [
+        'Novo contato recebido pelo site.',
+        '',
+        'Nome: ' . $lead['nome'],
+        'E-mail: ' . $lead['email'],
+        'Telefone: ' . $lead['telefone'],
+        'Imóvel: ' . ($imovelTitulo ?? 'não informado'),
+        'Visita preferida: ' . ($lead['data_visita'] !== '' ? formatarDataBr($lead['data_visita']) : 'não informada'),
+        '',
+        'Mensagem:',
+        $lead['mensagem'] !== '' ? $lead['mensagem'] : '(sem mensagem)',
+    ];
+    // E-mail do visitante já passou por FILTER_VALIDATE_EMAIL, então não carrega quebra de linha para o cabeçalho.
+    $cabecalhos = [
+        'Content-Type: text/plain; charset=UTF-8',
+        'Reply-To: ' . $lead['email'],
+    ];
+
+    $assunto = '=?UTF-8?B?' . base64_encode('Novo lead: ' . ($imovelTitulo ?? 'contato pelo site')) . '?=';
+    $enviado = @mail($destino, $assunto, implode("\r\n", $linhas), implode("\r\n", $cabecalhos));
+    if (!$enviado) {
+        error_log('notificarCorretor: mail() falhou para ' . $destino);
+    }
+    return $enviado;
+}
+
 function formatarDataBr(?string $data): string
 {
     if (!$data) return '—';

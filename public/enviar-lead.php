@@ -7,33 +7,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$destino = destinoLead((string) ($_POST['origem'] ?? ''), (int) ($_POST['imovel_id'] ?? 0));
+
 if (!csrfValido($_POST['csrf_token'] ?? null)) {
     $_SESSION['lead_erro'] = 'Sessão expirada. Recarregue a página e tente novamente.';
-    header('Location: index.php#contato');
+    header('Location: ' . $destino);
     exit;
 }
 
-$nome     = trim($_POST['nome'] ?? '');
-$email    = trim($_POST['email'] ?? '');
-$telefone = trim($_POST['telefone'] ?? '');
-$imovelId = (int) ($_POST['imovel_id'] ?? 0);
-$mensagem = trim($_POST['mensagem'] ?? '');
-$dataVisita = trim((string) ($_POST['data_visita_preferida'] ?? ''));
-
-// Limites iguais às colunas: texto maior que o VARCHAR estourava erro 500 no INSERT.
-$erros = [];
-if ($nome === '' || tamanhoTexto($nome) > 150) $erros[] = 'nome';
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || tamanhoTexto($email) > 150) $erros[] = 'e-mail';
-if ($telefone === '' || tamanhoTexto($telefone) > 30) $erros[] = 'telefone';
-if (tamanhoTexto($mensagem) > 2000) $erros[] = 'mensagem';
-if ($dataVisita !== '') {
-    $data = DateTimeImmutable::createFromFormat('!Y-m-d', $dataVisita);
-    if (!$data || $data->format('Y-m-d') !== $dataVisita || $dataVisita < date('Y-m-d')) $erros[] = 'data da visita';
-}
+[$lead, $erros] = validarLead($_POST);
 
 if (!empty($erros)) {
     $_SESSION['lead_erro'] = 'Verifique os dados informados (' . implode(', ', $erros) . ') e tente novamente.';
-    header('Location: index.php#contato');
+    header('Location: ' . $destino);
     exit;
 }
 
@@ -41,11 +27,13 @@ $pdo = conectar();
 
 // Se um imóvel foi indicado, confirma que ele existe de fato.
 $imovelIdFinal = null;
-if ($imovelId > 0) {
-    $stmt = $pdo->prepare('SELECT id FROM imoveis WHERE id = :id');
-    $stmt->execute([':id' => $imovelId]);
-    if ($stmt->fetch()) {
-        $imovelIdFinal = $imovelId;
+$imovelTitulo = null;
+if ($lead['imovel_id'] > 0) {
+    $stmt = $pdo->prepare('SELECT id, titulo FROM imoveis WHERE id = :id');
+    $stmt->execute([':id' => $lead['imovel_id']]);
+    if ($imovel = $stmt->fetch()) {
+        $imovelIdFinal = (int) $imovel['id'];
+        $imovelTitulo = $imovel['titulo'];
     }
 }
 
@@ -54,15 +42,17 @@ $insere = $pdo->prepare(
      VALUES (:nome, :email, :telefone, :imovel_id, :mensagem, :data_visita, :status)'
 );
 $insere->execute([
-    ':nome'        => $nome,
-    ':email'       => $email,
-    ':telefone'    => $telefone,
+    ':nome'        => $lead['nome'],
+    ':email'       => $lead['email'],
+    ':telefone'    => $lead['telefone'],
     ':imovel_id'   => $imovelIdFinal,
-    ':mensagem'    => $mensagem !== '' ? $mensagem : null,
-    ':data_visita' => $dataVisita !== '' ? $dataVisita : null,
-    ':status'      => $dataVisita !== '' ? 'visita_agendada' : 'novo',
+    ':mensagem'    => $lead['mensagem'] !== '' ? $lead['mensagem'] : null,
+    ':data_visita' => $lead['data_visita'] !== '' ? $lead['data_visita'] : null,
+    ':status'      => $lead['data_visita'] !== '' ? 'visita_agendada' : 'novo',
 ]);
 
+notificarCorretor($lead, $imovelTitulo);
+
 $_SESSION['lead_ok'] = true;
-header('Location: index.php#contato');
+header('Location: ' . $destino);
 exit;
