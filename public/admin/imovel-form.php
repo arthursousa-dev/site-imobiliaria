@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $suites     = (int) ($_POST['suites'] ?? 0);
         $vagas      = (int) ($_POST['vagas'] ?? 0);
         $area       = (int) ($_POST['area_m2'] ?? 0);
-        $preco      = (float) str_replace(['.', ','], ['', '.'], $_POST['preco'] ?? '0');
+        $preco      = lerPreco((string) ($_POST['preco'] ?? '0'));
         $descricao  = trim($_POST['descricao'] ?? '');
         $imagemUrl  = trim($_POST['imagem_url'] ?? '');
 

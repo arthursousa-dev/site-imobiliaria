@@ -23,6 +23,19 @@ function formatarPreco(float $valor): string
     return 'R$ ' . number_format($valor, 0, ',', '.');
 }
 
+/**
+ * Converte o preço digitado em número. Aceita "350000", "350.000", "350.000,50" e o
+ * formato do banco ("3500000.00", que o formulário de edição traz preenchido).
+ */
+function lerPreco(string $valor): float
+{
+    $valor = str_replace(['R$', ' '], '', trim($valor));
+    if (preg_match('/^\d+(\.\d{1,2})?$/', $valor)) {
+        return (float) $valor;
+    }
+    return (float) str_replace(['.', ','], ['', '.'], $valor);
+}
+
 function formatarDataBr(?string $data): string
 {
     if (!$data) return '—';
