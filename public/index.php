@@ -57,7 +57,7 @@ unset($_SESSION['lead_ok']);
               <?= (int) $imovel['area_m2'] ?>m²
             </p>
             <p class="preco"><?= formatarPreco($imovel['preco']) ?></p>
-            <a href="#contato" onclick="document.getElementById('lead_imovel').value='<?= (int) $imovel['id'] ?>'; document.getElementById('lead_imovel_nome').textContent='<?= limpar($imovel['titulo']) ?>';" class="btn-destaque" style="display:inline-block;margin-top:10px;font-size:14px;padding:8px 18px">Tenho interesse</a>
+            <a href="#contato" data-imovel-id="<?= (int) $imovel['id'] ?>" data-imovel-titulo="<?= limpar($imovel['titulo']) ?>" class="btn-destaque" style="display:inline-block;margin-top:10px;font-size:14px;padding:8px 18px">Tenho interesse</a>
           </div>
         </div>
       <?php endforeach; ?>
@@ -142,6 +142,16 @@ unset($_SESSION['lead_ok']);
     </div>
   </div>
 </section>
+
+<script>
+// Título vai por data-attribute e textContent: nunca é interpretado como JS ou HTML.
+document.querySelectorAll('[data-imovel-id]').forEach(function (botao) {
+  botao.addEventListener('click', function () {
+    document.getElementById('lead_imovel').value = botao.dataset.imovelId;
+    document.getElementById('lead_imovel_nome').textContent = botao.dataset.imovelTitulo;
+  });
+});
+</script>
 
 </body>
 </html>
